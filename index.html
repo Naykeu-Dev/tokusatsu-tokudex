@@ -285,6 +285,13 @@ function tabStatus(s) {
   return `<div class="card"><h3>Atributos base</h3>${bars}<div class="stat"><span class="mut"><b>Total</b></span><b>${s.total}</b><span></span></div></div>${fb}
   <div class="card"><h3>Crescimento</h3><div class="kv"><div><small>Curva de XP</small>${{ fast: "Rápida", medium_fast: "Média-rápida", medium_slow: "Média-lenta", slow: "Lenta" }[s.curve]}</div><div><small>XP base</small>${s.baseXp}</div></div></div>`;
 }
+const FUSAO_TXT = "Para fundir, o Dragão Negro precisa estar com o item Núcleo Gattai e os 4 Ghostbots já EVOLUÍDOS (Dragão Negro, Crocodilo Azul, Centopeia Vermelha e Camarão Prateado) precisam estar vivos na sua equipe. Dura só a batalha. Se o Gattaider for derrotado, os 4 desmaiam juntos.";
+function fusaoDe(s) {
+  const seen = new Set(); const q = [s.id];
+  while (q.length) { const id = q.pop(); if (seen.has(id)) continue; seen.add(id); SP[id]?.evolvesTo.forEach((e) => q.push(e.to)); }
+  for (const x of D.species) for (const f of x.forms) if (f.fusion && f.fusion.some((m) => seen.has(m))) return { holder: x, form: f };
+  return null;
+}
 const mini = (id, cur) => { const s = SP[id]; return `<button class="mini ${cur ? "cur" : ""}" data-go="#/mon/${id}">${s.sprite ? `<img src="${s.sprite}" ${auraCss(s)} alt="">` : `<div style="height:64px"></div>`}${esc(s.name)}</button>`; };
 function chainRoot(s) { let c = s; const seen = new Set(); while (c.evolvesFrom.length && !seen.has(c.id)) { seen.add(c.id); c = SP[c.evolvesFrom[0].from]; } return c; }
 function chainHtml(r, cur) {
@@ -295,8 +302,10 @@ function chainHtml(r, cur) {
 function tabEvo(s) {
   const root = chainRoot(s);
   const has = root.evolvesTo.length > 0;
-  const f = s.forms.map((x) => `<div class="card"><h3>${x.fusion ? "Fusão em Batalha" : "Henshin em Batalha (Mega)"}</h3>${x.fusion ? `<div class="evo">${x.fusion.map((id) => mini(id, id === s.id)).join('<span class="arrow"><span>+</span></span>')}</div><div class="evo" style="margin-top:8px"><div class="arrow"><span>↓</span>Segura<br><b>${esc(x.itemName)}</b></div></div>` : ""}<div class="evo">${x.fusion ? "" : mini(s.id, true)}${x.fusion ? "" : `<div class="arrow"><span>⚡</span>Segura<br><b>${esc(x.itemName)}</b></div>`}<div class="mini" style="background:${col(x.aff[0])};color:#fff;width:120px">${s.sprite ? `<img src="${s.sprite}" style="filter:drop-shadow(0 0 8px #fff)" alt="">` : ""}${esc(x.name)}</div></div><p class="sm mut">Dura só a batalha. Dá bônus de atributos e um golpe especial.</p></div>`).join("");
-  return (has ? `<div class="card"><h3>Linha de evolução</h3><div style="overflow-x:auto;padding-bottom:4px">${chainHtml(root, s.id)}</div></div>` : `<div class="card"><h3>Evolução</h3><span class="mut">${esc(s.name)} não evolui.</span></div>`) + f;
+  const f = s.forms.map((x) => `<div class="card"><h3>${x.fusion ? "Fusão em Batalha" : "Henshin em Batalha (Mega)"}</h3>${x.fusion ? `<div class="evo">${x.fusion.map((id) => mini(id, id === s.id)).join('<span class="arrow"><span>+</span></span>')}</div><div class="evo" style="margin-top:8px"><div class="arrow"><span>↓</span>Segura<br><b>${esc(x.itemName)}</b></div><div class="mini" style="background:${col(x.aff[0])};color:#fff;width:120px">${x.sprite ? `<img src="${x.sprite}" style="filter:drop-shadow(0 0 8px #fff)" alt="">` : ""}${esc(x.name)}</div></div><p class="sm" style="margin:10px 0 0">${FUSAO_TXT}</p>` : ""}<div class="evo">${x.fusion ? "" : mini(s.id, true)}${x.fusion ? "" : `<div class="arrow"><span>⚡</span>Segura<br><b>${esc(x.itemName)}</b></div>`}<div class="mini" style="background:${col(x.aff[0])};color:#fff;width:120px">${x.sprite || s.sprite ? `<img src="${x.sprite || s.sprite}" style="filter:drop-shadow(0 0 8px #fff)" alt="">` : ""}${esc(x.name)}</div></div><p class="sm mut">${s.forms.length > 1 ? "Menu DNA (ícone ao lado da vida): com os itens das formas na mochila ou no slot, escolha a forma, troque quantas vezes quiser ou destransforme (gasta o turno). Só aparecem as formas dos itens que você tem; sem nenhum, o ícone não aparece." : "Dura só a batalha. Dá bônus de atributos e um golpe especial."}</p></div>`).join("");
+  const fu = fusaoDe(s);
+  const fusionCard = fu && !s.forms.some((x) => x.fusion) ? `<div class="card" style="border:2px solid ${col("mecha")}"><h3>Fusão Gattaider</h3><p class="sm" style="margin:0 0 8px"><b>${esc(s.name)}</b> faz parte da fusão. ${FUSAO_TXT}</p><div class="wk">${fu.form.fusion.map((id) => mini(id, false)).join("")}</div><div class="sm" style="margin-top:8px">Resultado: <a href="#/mon/species_kaiju_gattaider"><b>Gattaider</b></a></div></div>` : "";
+  return fusionCard + (has ? `<div class="card"><h3>Linha de evolução</h3><div style="overflow-x:auto;padding-bottom:4px">${chainHtml(root, s.id)}</div></div>` : `<div class="card"><h3>Evolução</h3><span class="mut">${esc(s.name)} não evolui.</span></div>`) + f;
 }
 function tabGolpes(s) {
   const n = s.learnset.length;
@@ -366,7 +375,7 @@ function agPlan() {
   const N = D.npcsPlan, det = (t, inner) => `<details class="card" style="margin-top:10px"><summary><b>${t}</b></summary><div style="margin-top:8px">${inner}</div></details>`;
   return `<div class="sec">Em breve (previsto no documento)</div>` +
     det(`Rivais (${N.rivais.length})`, N.rivais.map((r) => `<div class="row" style="margin-bottom:8px">${r.portrait ? `<img class="av" src="${r.portrait}" alt="">` : ""}<div><b>${esc(r.nome)}</b> <span class="tag ${r.jogo.startsWith("No jogo") ? "g" : "k"}">${esc(r.jogo)}</span><div class="sm mut">${esc(r.texto)}</div></div></div>`).join("")) +
-    det(`Guardiões (${N.guardioes.length})`, N.guardioes.map((g) => `<div style="margin-bottom:10px"><span class="tag p">${esc(g.id)}</span> <b>${esc(g.nome)}</b><div class="sm mut">${esc(g.local)} · abre após ${esc(g.abre)} · Totem: ${esc(g.totem)}<br>Batalha: ${esc(g.batalha)} · Provação contra ${esc(g.rival)}</div></div>`).join("")) +
+    det(`Guardiões (${N.guardioes.length})`, N.guardioes.map((g) => `<div class="row" style="margin-bottom:10px;align-items:flex-start">${g.portrait ? `<img class="av" src="${g.portrait}" alt="">` : ""}<div><span class="tag p">${esc(g.id)}</span> <b>${esc(g.nome)}</b> <span class="tag g">ARTE PRONTA</span><div class="sm mut">${esc(g.local)} · abre após ${esc(g.abre)} · Totem: ${esc(g.totem)}<br>Batalha: ${esc(g.batalha)} · Provação contra ${esc(g.rival)}</div></div></div>`).join("")) +
     det(`Vilões humanos (${N.viloes.length})`, N.viloes.map((v) => `<div style="margin-bottom:10px"><b>${esc(v.nome)}</b><div class="sm mut">${esc(v.papel)}<br>Frentes: ${esc(v.frentes)} · Usa: ${esc(v.combatentes)}</div></div>`).join("")) +
     det(`Quests secundárias (${N.quests.length})`, `<table>${N.quests.map((q) => `<tr><td><b>${esc(q.id)}</b></td><td>${esc(q.nome)}<div class="mut" style="font-size:11px">${esc(q.local)} · ${esc(q.quem)}</div></td><td>${esc(q.recompensa)}</td><td>${esc(q.status)}</td></tr>`).join("")}</table>`);
 }
