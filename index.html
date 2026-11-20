@@ -152,25 +152,26 @@ const ICON = {
   hq: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 21V9l9-6 9 6v12z"/><path d="M9 21v-7h6v7"/></svg>',
   ag: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>',
   it: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h16v12H4zM9 8V5a3 3 0 0 1 6 0v3"/></svg>',
+  fm: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>',
   af: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2l3 7 7 .6-5.3 4.7 1.7 7.2L12 17.8 5.6 21.5l1.7-7.2L2 9.6 9 9z"/></svg>',
   map: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2zM9 4v14M15 6v14"/></svg>',
 };
-const TABS = [["mon", "Combatentes"], ["hq", "Quartéis"], ["ag", "Agentes"], ["it", "Itens"], ["map", "Locais"], ["af", "Afinidades"]];
-const ROUTE = { mon: "mon", hq: "hq", ag: "ag", it: "it", map: "map", af: "af" };
+const TABS = [["mon", "Combatentes"], ["hq", "Quartéis"], ["ag", "Agentes"], ["it", "Itens"], ["fm", "Formas"], ["map", "Locais"], ["af", "Afinidades"]];
+const ROUTE = { mon: "mon", hq: "hq", ag: "ag", it: "it", fm: "fm", map: "map", af: "af" };
 $("#nav").innerHTML = TABS.map(([k, n]) => `<button data-k="${k}">${ICON[k]}<span>${n}</span></button>`).join("");
 $("#nav").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { closeSheet(); location.hash = "#/" + b.dataset.k; } });
 $("#sub").textContent = `${D.versao} · ${D.species.length} Combatentes`;
 
-const state = { q: "", aff: "", fr: "", obtain: "", agRole: "", itCat: "", view: "" };
-$("#q").addEventListener("input", (e) => { state.q = e.target.value; if (!["mon", "ag", "it"].includes(page())) location.hash = "#/mon"; else render(); });
+const state = { fmItem: "", q: "", aff: "", fr: "", obtain: "", agRole: "", itCat: "", view: "" };
+$("#q").addEventListener("input", (e) => { state.q = e.target.value; if (!["mon", "ag", "it", "fm"].includes(page())) location.hash = "#/mon"; else render(); });
 const page = () => (location.hash.split("/")[1] || "mon");
 
 function render() {
   const p = page();
   [...$("#nav").children].forEach((b) => b.classList.toggle("on", b.dataset.k === p));
-  $("#searchbox").style.display = ["mon", "ag", "it"].includes(p) ? "" : "none";
+  $("#searchbox").style.display = ["mon", "ag", "it", "fm"].includes(p) ? "" : "none";
   $("#q").placeholder = p === "ag" ? "Buscar Agente, classe ou lugar..." : p === "it" ? "Buscar item..." : "Buscar por nome, série, afinidade...";
-  ({ mon: pgMon, hq: pgHq, ag: pgAg, it: pgIt, af: pgAf, map: pgMap }[p] || pgMon)();
+  ({ mon: pgMon, hq: pgHq, ag: pgAg, it: pgIt, fm: pgFm, af: pgAf, map: pgMap }[p] || pgMon)();
   const sh = location.hash.split("/");
   if (sh[2]) openSheet(p, decodeURIComponent(sh[2]), sh[3]); else closeSheet(true);
 }
@@ -181,6 +182,35 @@ $("#app").addEventListener("click", (e) => {
   const f = e.target.closest("[data-f]"); if (f) { state[f.dataset.f] = state[f.dataset.f] === f.dataset.v ? "" : f.dataset.v; if (f.dataset.v === "") state[f.dataset.f] = ""; render(); return; }
   const g = e.target.closest("[data-go]"); if (g) location.hash = g.dataset.go;
 });
+
+
+// ---------------- Formas (Henshin em Batalha por item) ----------------
+const FM = D.species.flatMap((s) => s.forms.map((f) => ({ ...f, sp: s })));
+const FMI = Object.fromEntries(FM.map((f) => [f.id, f]));
+const fmStats = (f) => Object.fromEntries(Object.entries(f.sp.stats).map(([k, v]) => [k, v + (f.bonus[k] || 0)]));
+function pgFm() {
+  const q = norm(state.q);
+  const items = [...new Map(FM.map((f) => [f.item, f.itemName]))];
+  const list = FM.filter((f) => (!state.fmItem || f.item === state.fmItem) && (!q || norm(f.name + f.sp.name + f.itemName).includes(q)));
+  $("#app").innerHTML = chips([["", "Todas (" + FM.length + ")"], ...items], state.fmItem, "fmItem") +
+    `<p class="mut sm" style="margin:0 2px 10px">Formas que o Combatente assume <b>em batalha</b> segurando (ou tendo na mochila) o item da forma. Transformado, ele ganha <b>atributos</b> e libera <b>2 golpes exclusivos</b> além dos 4: o <b>especial</b> e o <b>golpe final</b>.</p><div class="count">${list.length} formas</div>` +
+    `<div class="list">${list.map((f) => { const tot = Object.values(f.bonus).reduce((a, b) => a + b, 0); return `<button class="item-btn" data-go="#/fm/${f.id}"><img class="av" style="image-rendering:auto;object-fit:contain" src="${f.sprite || f.sp.sprite}" alt=""><div style="flex:1;min-width:0;text-align:left"><b>${esc(f.name)}</b><div class="mut sm">${esc(f.sp.name)} · ${esc(f.itemName)}</div><div style="margin-top:4px">${f.aff.map(aff).join(" ")}</div></div><div class="mut sm" style="text-align:right">+${tot} atributos<br>${esc(f.special.name)}<br><b>${esc(f.special2.name)}</b></div></button>`; }).join("")}</div>`;
+}
+function moveRow(m, cd, tag) {
+  return `<div class="card" style="margin:0 0 8px;border:2px solid ${col(m.affinity)}"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b style="font-size:16px">${esc(m.name)}</b>${aff(m.affinity)}<span class="b" style="--c:#555">${tag}</span></div>
+    <div class="kv" style="margin:8px 0 4px"><div><small>Poder</small>${m.power}</div><div><small>Precisão</small>${m.accuracy}%</div><div><small>Categoria</small>${CAT[m.category]}</div><div><small>Recarga</small>${cd} turnos</div></div><div class="sm mut">${esc(m.desc)}</div></div>`;
+}
+function fmSheet(f) {
+  const s = f.sp, fin = fmStats(f), max = 160, tb = Object.values(s.stats).reduce((a, b) => a + b, 0), tf = Object.values(fin).reduce((a, b) => a + b, 0);
+  const bars = Object.entries(fin).map(([k, v]) => { const base = s.stats[k], d = f.bonus[k] || 0; return `<div class="stat"><span class="mut">${esc(D.stats[k])}</span><b>${v}${d ? ` <span style="color:#2f9e5b;font-size:12px">+${d}</span>` : ""}</b><div class="bar0"><i style="width:${Math.min(100, (v / max) * 100)}%;background:linear-gradient(90deg,${col(f.aff[0])} ${Math.round((base / Math.max(v, 1)) * 100)}%,#2f9e5b ${Math.round((base / Math.max(v, 1)) * 100)}%)"></i></div></div>`; }).join("");
+  return `<div class="sheet"><div class="hero" style="background:${gradient({ aff: f.aff })}"><div class="bar"><button data-back aria-label="Voltar">‹</button><b>Forma por item</b></div><h2>${esc(f.name)}</h2><div class="cat">${esc(f.short || "")} · ${esc(ANIM[f.anim] || f.anim)}</div><img class="big" src="${f.sprite || s.sprite}" alt=""></div>
+  <div class="panel"><div class="card"><div class="kv"><div><small>Combatente</small><a href="#/mon/${s.id}"><b>${esc(s.name)}</b></a></div><div><small>Item</small><a href="#/it/${f.item}"><b>${esc(f.itemName)}</b></a></div><div><small>Golpes</small>×${f.boost}</div></div><div style="margin-top:8px">${f.aff.map(aff).join(" ")}</div></div>
+  <div class="card"><h3>Atributos (base + forma)</h3>${bars}<div class="stat"><span class="mut"><b>Total</b></span><b style="white-space:nowrap">${tb} → ${tf} <span style="color:#2f9e5b;font-size:12px">+${tf - tb}</span></b><span></span></div></div>
+  <div class="card"><h3>Golpes exclusivos (além dos 4)</h3>${moveRow(f.special, f.cooldown, "Especial")}${moveRow(f.special2, f.cooldown2, "Golpe final")}<div class="sm mut">Só podem ser usados enquanto transformado. Cada um tem a sua recarga e dá para usar logo no turno em que transforma.</div></div>
+  ${f.fusion ? `<div class="card"><h3>Fusão</h3><div class="sm">Precisa dos ${f.fusion.length} na equipe, vivos. Os outros ficam fundidos até o fim da batalha.</div><div class="wk" style="margin-top:6px">${f.fusion.map((id) => mini(id, false)).join("")}</div></div>` : ""}
+  ${f.ability ? `<div class="card"><h3>Habilidade da forma</h3><b>${esc(f.ability.name)}</b><div class="mut sm">${esc(f.ability.desc)}</div></div>` : ""}
+  ${f.rule ? `<div class="card"><h3>Regra</h3><div class="sm">${esc(RULE[f.rule] || f.rule)}</div></div>` : ""}</div></div>`;
+}
 
 // ---------------- Combatentes ----------------
 function pgPlan() {
@@ -226,6 +256,7 @@ function openSheet(kind, id, tab) {
   if (kind === "mon") { const s = SP[id]; if (!s) return; tabNow = tab || tabNow; root.innerHTML = monSheet(s); }
   else if (kind === "ag") { const t = TR[id]; if (!t) return; root.innerHTML = agSheet(t); }
   else if (kind === "it") { const i = IT[id]; if (!i) return; root.innerHTML = itSheet(i); }
+  else if (kind === "fm") { const f = FMI[id]; if (!f) return; root.innerHTML = fmSheet(f); }
   else return;
   document.body.style.overflow = "hidden";
 }
@@ -273,6 +304,8 @@ function formCard(f) {
     ${f.fusion ? `<div class="sm" style="margin-top:6px"><b>Fusão:</b> precisa dos ${f.fusion.length} na equipe, vivos. Os outros ficam fundidos até o fim da batalha e o líder se recupera por inteiro.<div class="wk" style="margin-top:6px">${f.fusion.map((id) => mini(id, false)).join("")}</div></div>` : ""}
     <div class="wk" style="margin:8px 0">${b.map(([k, v]) => `<span class="b" style="--c:${v > 0 ? "#2f9e5b" : "#d4503f"}">${esc(D.stats[k])} ${v > 0 ? "+" : ""}${v}</span>`).join("")}<span class="b" style="--c:#555">Golpes ×${f.boost}</span></div>
     <div class="sm"><b>Golpe especial:</b> ${esc(f.special.name)} <span class="mut">(${f.special.power} de poder · recarga ${f.cooldown} turnos)</span></div>
+    <div class="sm"><b>Golpe final:</b> ${esc(f.special2.name)} <span class="mut">(${f.special2.power} de poder · recarga ${f.cooldown2} turnos)</span></div>
+    <div class="sm" style="margin-top:6px"><a href="#/fm/${f.id}"><b>Ver todos os dados da forma ›</b></a></div>
     ${f.ability ? `<div class="sm"><b>Habilidade:</b> ${esc(f.ability.name)} — ${esc(f.ability.desc)}</div>` : ""}
     ${f.rule ? `<div class="sm mut" style="margin-top:6px">${esc(RULE[f.rule] || f.rule)}</div>` : ""}
     <div class="sm mut" style="margin-top:4px">Animação: ${esc(ANIM[f.anim] || f.anim)}</div></div>`;
