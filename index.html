@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#c8342c">
+<title>Tokudex — Tokusatsu Chronicles</title>
+<style>
+:root{
+  --bg:#f3f1ee; --card:#fff; --ink:#1d1f24; --mut:#6b7079; --line:#e4e1dc; --red:#c8342c; --red2:#a82820; --gold:#f0b429;
+  --nav:#fff; --shadow:0 2px 10px rgba(30,20,10,.08);
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#14161b; --card:#1f232b; --ink:#eceef2; --mut:#9aa1ad; --line:#2d323c; --nav:#1a1d24; --shadow:0 2px 10px rgba(0,0,0,.4)}
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:78px}
+button{font:inherit;color:inherit;cursor:pointer}
+img{display:block}
+a{color:#e0584e;text-decoration:none;font-weight:600}
+.top{background:linear-gradient(135deg,var(--red),var(--red2));color:#fff;padding:14px 16px 16px;position:sticky;top:0;z-index:20;box-shadow:0 3px 12px rgba(0,0,0,.25)}
+.top h1{margin:0;font-size:22px;letter-spacing:.5px;display:flex;align-items:center;gap:10px}
+.top h1 .dot{width:26px;height:26px;border-radius:50%;background:#fff;border:4px solid #1d1f24;box-shadow:inset 0 0 0 4px var(--gold)}
+.top small{opacity:.85;font-weight:400;font-size:12px;display:block;margin-top:2px}
+.search{margin-top:10px;display:flex;gap:8px}
+.search input{flex:1;border:0;border-radius:12px;padding:11px 14px;font:inherit;background:rgba(255,255,255,.95);color:#1d1f24;outline:none}
+.wrap{max-width:1100px;margin:0 auto;padding:12px 14px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:4px 0 10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 12px;white-space:nowrap;font-size:13px}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.count{color:var(--mut);font-size:13px;margin:2px 2px 8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.mon{position:relative;border-radius:18px;padding:10px 10px 12px;overflow:hidden;color:#fff;text-align:left;border:0;min-height:158px;box-shadow:var(--shadow);transition:transform .12s}
+.mon:active{transform:scale(.97)}
+.mon .num{position:absolute;right:10px;top:8px;font-weight:800;opacity:.55;font-size:13px}
+.mon .nm{font-weight:700;font-size:15px;max-width:80%;text-shadow:0 1px 2px rgba(0,0,0,.3);line-height:1.15}
+.mon .badges{display:flex;flex-direction:column;gap:3px;margin-top:6px;align-items:flex-start}
+.mon img{position:absolute;right:-4px;bottom:-4px;width:92px;height:92px;object-fit:contain;filter:drop-shadow(0 3px 4px rgba(0,0,0,.35))}
+.mon .ph{position:absolute;right:10px;bottom:8px;font-size:34px;opacity:.5}
+.mon::after{content:"";position:absolute;right:-20px;bottom:-26px;width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,.17)}
+.mon img{z-index:1}
+.b{display:inline-block;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700;color:#fff;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.35);letter-spacing:.3px}
+.b.solid{border:0}
+.card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:14px;margin-bottom:12px}
+.card h3{margin:0 0 8px;font-size:13px;letter-spacing:.8px;text-transform:uppercase;color:var(--mut)}
+.list{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.row{display:flex;gap:12px;align-items:center}
+.av{width:56px;height:56px;border-radius:14px;background:var(--line);flex:none;object-fit:contain;image-rendering:pixelated}
+.tag{font-size:11px;font-weight:700;border-radius:6px;padding:2px 7px;color:#fff;background:var(--red)}
+.tag.g{background:#2f7d4b}.tag.b{background:#2c5fb3}.tag.y{background:#b8860b}.tag.p{background:#7a3fb0}.tag.k{background:#444}
+.mut{color:var(--mut)}
+.sm{font-size:13px}
+.item-btn{display:flex;gap:12px;align-items:center;width:100%;text-align:left;background:var(--card);border:0;border-radius:16px;box-shadow:var(--shadow);padding:12px}
+/* ficha */
+.sheet{position:fixed;inset:0;background:var(--bg);z-index:50;overflow-y:auto;overscroll-behavior:contain;animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+.hero{position:relative;color:#fff;padding:14px 16px 62px;overflow:hidden}
+.hero::before{content:"";position:absolute;right:-60px;top:20px;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,.14)}
+.hero .bar{display:flex;justify-content:space-between;align-items:center;position:relative;z-index:2}
+.hero .bar button{background:rgba(0,0,0,.25);border:0;border-radius:50%;width:38px;height:38px;color:#fff;font-size:20px}
+.hero h2{margin:8px 0 2px;font-size:28px;position:relative;z-index:2;text-shadow:0 1px 3px rgba(0,0,0,.3)}
+.hero .cat{opacity:.9;position:relative;z-index:2}
+.hero .badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;position:relative;z-index:2}
+.hero .big{position:absolute;right:6px;top:34px;width:min(46vw,230px);height:min(46vw,230px);object-fit:contain;filter:drop-shadow(0 6px 8px rgba(0,0,0,.4));z-index:1}
+.panel{background:var(--bg);border-radius:26px 26px 0 0;margin-top:-34px;position:relative;z-index:3;padding:14px 14px 40px;min-height:60vh}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:12px;overflow-x:auto;scrollbar-width:none}
+.tabs button{background:none;border:0;padding:10px 12px;font-weight:600;color:var(--mut);border-bottom:3px solid transparent;white-space:nowrap}
+.tabs button.on{color:var(--ink);border-color:var(--red)}
+.stat{display:grid;grid-template-columns:64px 34px 1fr;gap:8px;align-items:center;margin:7px 0;font-size:13px}
+.stat b{text-align:right}
+.bar0{height:8px;background:var(--line);border-radius:6px;overflow:hidden}
+.bar0 i{display:block;height:100%;border-radius:6px}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kv div{background:var(--bg);border-radius:10px;padding:8px 10px}
+.kv small{display:block;color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+.evo{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.evo .arrow{display:flex;flex-direction:column;align-items:center;font-size:11px;color:var(--mut);min-width:70px;text-align:center}
+.evo .arrow span{font-size:22px;color:var(--ink)}
+.mini{display:flex;flex-direction:column;align-items:center;width:92px;background:var(--bg);border-radius:14px;padding:8px;border:0;text-align:center;font-size:12px;font-weight:600}
+.mini img{width:64px;height:64px;object-fit:contain}
+.mini.cur{outline:2px solid var(--red)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:7px 6px;text-align:left;border-bottom:1px solid var(--line)}
+th{color:var(--mut);font-size:11px;text-transform:uppercase}
+.nav{position:fixed;left:0;right:0;bottom:0;background:var(--nav);border-top:1px solid var(--line);display:flex;z-index:40;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -4px 16px rgba(0,0,0,.08)}
+.nav button{flex:1;background:none;border:0;padding:9px 2px 8px;font-size:11px;color:var(--mut);display:flex;flex-direction:column;align-items:center;gap:3px;font-weight:600}
+.nav button svg{width:24px;height:24px}
+.nav button.on{color:var(--red)}
+.wk{display:flex;flex-wrap:wrap;gap:6px}
+.wk .b{background:var(--c);border:0}
+.wk em{font-style:normal;margin-left:4px;opacity:.9}
+.medal{width:54px;height:54px;flex:none}
+.sec{margin:14px 2px 8px;font-weight:800;font-size:17px}
+.matrix{overflow:auto;border-radius:12px;background:var(--card);box-shadow:var(--shadow);max-height:70vh}
+.matrix table{width:auto;font-size:11px}
+.matrix th,.matrix td{text-align:center;padding:4px 5px;min-width:30px}
+.matrix th.h{position:sticky;top:0;background:var(--card);z-index:2}
+.matrix td.l{position:sticky;left:0;background:var(--card);font-weight:700;text-align:left;z-index:1}
+.x2{background:#2f9e5b;color:#fff;font-weight:700}.x5{background:#d4503f;color:#fff}.x0{background:#333;color:#fff}
+details summary{cursor:pointer;color:var(--mut);font-size:13px}
+.star{color:#f0b429;font-weight:800}
+tr.starrow td{background:rgba(240,180,41,.09)}
+.empty{text-align:center;color:var(--mut);padding:40px 10px}
+.foot{color:var(--mut);font-size:12px;text-align:center;padding:20px 12px}
+@media(min-width:760px){.grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}.sheet .panel,.sheet .hero>*{max-width:760px;margin-left:auto;margin-right:auto}.sheet .panel{margin-top:-34px}}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1><span class="dot"></span><span>TOKUDEX<small id="sub"></small></span></h1>
+  <div class="search" id="searchbox"><input id="q" type="search" placeholder="Buscar por nome, série, afinidade..." autocomplete="off"></div>
+</header>
+<main class="wrap" id="app"></main>
+<nav class="nav" id="nav"></nav>
+<div id="sheet-root"></div>
+
+<script src="data.js"></script>
+<script>
+const D = window.TOKUDEX;
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const SP = Object.fromEntries(D.species.map((s) => [s.id, s]));
+const TR = Object.fromEntries(D.trainers.map((t) => [t.id, t]));
+const IT = Object.fromEntries(D.items.map((i) => [i.id, i]));
+const AFF = Object.fromEntries(D.aff.map((a) => [a.id, a.name]));
+const COL = { marcial:"#d2562d", inseto:"#7aa32a", cosmico:"#3d7be0", sombrio:"#5a4a78", kaiju:"#8a6a3a", cibernetico:"#4aa3c4", fogo:"#ee6a2a", agua:"#3a8ee6", planta:"#3ea853", eletrico:"#e0b81c", elemental:"#9a6ad6", mistico:"#c25fc0", ninja:"#3b4658", mecha:"#7f8a99", espectral:"#6f58b8", temporal:"#d98a1f", digital:"#18a99a" };
+const col = (a) => COL[a] || "#777";
+const fr = (s) => (s.franchise === "outros" ? "outras" : s.franchise);
+const FR = {}; D.species.forEach((s) => (FR[fr(s)] = s.franchiseName));
+const ERA = { showa: "Showa", heisei: "Heisei", reiwa: "Reiwa" };
+const ROLE = { comandante: ["Comandante", "y"], conselho: ["Conselho dos Cinco", "p"], campeao: ["Campeão", "p"], rival: ["Rival", "b"], chefe: ["Chefe", "k"], missao: ["Missão", "g"], agente: ["Agente", ""] };
+const RARE = { common: "Comum", rare: "Raro", epic: "Épico", legendary: "Lendário", mythic: "Mítico" };
+const CAT = { physical: "Físico", special: "Especial", status: "Status" };
+const RULE = { color_timer: "Color Timer: o Ataque Especial cai a cada turno (até 3 vezes) depois do 3º turno em campo.", limited_3_turns: "Dura só 3 turnos.", liquid_body: "Corpo líquido.", analysis_visor: "Visor de Análise." };
+const ANIM = { giant: "Gigante (cresce e a câmera recua)", rider: "Rider (armadura)", true_form: "Forma verdadeira" };
+const PLACE = { fusao: "Fusão", selvagem: "Selvagem", quartel: "Quartel", missao: "Missão", lendario: "Lendário", historia: "História", inicial: "Inicial", agente: "Com Agente" };
+const TERR = { grass: "Grama", tall_grass: "Mato alto", water: "Água", cave: "Caverna", sand: "Areia", snow: "Neve", special: "Especial" };
+const PER = { morning: "Manhã", day: "Dia", night: "Noite" };
+const aff = (a) => `<span class="b" style="background:${col(a)};border:0">${esc(AFF[a] || a)}</span>`;
+const auraCss = (s) => (s.aura ? `style="filter:drop-shadow(0 0 7px ${s.aura}) drop-shadow(0 0 2px ${s.aura})"` : "");
+const sprite = (s, cls = "") => (s.sprite ? `<img class="${cls}" src="${s.sprite}" ${auraCss(s)} alt="${esc(s.name)}" loading="lazy">` : `<div class="ph">?</div>`);
+const pad = (n) => String(n).padStart(3, "0");
+const gradient = (s) => (s.aff.length > 1 ? `linear-gradient(135deg,${col(s.aff[0])},${col(s.aff[1])})` : `linear-gradient(135deg,${col(s.aff[0])},${col(s.aff[0])}cc)`);
+const mapNameOnly = (n) => esc(n);
+const norm = (s) => String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
+// ---------------- navegação ----------------
+const ICON = {
+  mon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h6M15 12h6"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>',
+  hq: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 21V9l9-6 9 6v12z"/><path d="M9 21v-7h6v7"/></svg>',
+  ag: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>',
+  it: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h16v12H4zM9 8V5a3 3 0 0 1 6 0v3"/></svg>',
+  af: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2l3 7 7 .6-5.3 4.7 1.7 7.2L12 17.8 5.6 21.5l1.7-7.2L2 9.6 9 9z"/></svg>',
+  map: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2zM9 4v14M15 6v14"/></svg>',
+};
+const TABS = [["mon", "Combatentes"], ["hq", "Quartéis"], ["ag", "Agentes"], ["it", "Itens"], ["map", "Locais"], ["af", "Afinidades"]];
+const ROUTE = { mon: "mon", hq: "hq", ag: "ag", it: "it", map: "map", af: "af" };
+$("#nav").innerHTML = TABS.map(([k, n]) => `<button data-k="${k}">${ICON[k]}<span>${n}</span></button>`).join("");
+$("#nav").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { closeSheet(); location.hash = "#/" + b.dataset.k; } });
+$("#sub").textContent = `${D.versao} · ${D.species.length} Combatentes`;
+
+const state = { q: "", aff: "", fr: "", obtain: "", agRole: "", itCat: "", view: "" };
+$("#q").addEventListener("input", (e) => { state.q = e.target.value; if (!["mon", "ag", "it"].includes(page())) location.hash = "#/mon"; else render(); });
+const page = () => (location.hash.split("/")[1] || "mon");
+
+function render() {
+  const p = page();
+  [...$("#nav").children].forEach((b) => b.classList.toggle("on", b.dataset.k === p));
+  $("#searchbox").style.display = ["mon", "ag", "it"].includes(p) ? "" : "none";
+  $("#q").placeholder = p === "ag" ? "Buscar Agente, classe ou lugar..." : p === "it" ? "Buscar item..." : "Buscar por nome, série, afinidade...";
+  ({ mon: pgMon, hq: pgHq, ag: pgAg, it: pgIt, af: pgAf, map: pgMap }[p] || pgMon)();
+  const sh = location.hash.split("/");
+  if (sh[2]) openSheet(p, decodeURIComponent(sh[2]), sh[3]); else closeSheet(true);
+}
+window.addEventListener("hashchange", () => { const keep = scrollY; render(); });
+
+const chips = (opts, cur, key) => `<div class="chips">${opts.map(([v, n]) => `<button class="chip ${cur === v ? "on" : ""}" data-f="${key}" data-v="${esc(v)}">${esc(n)}</button>`).join("")}</div>`;
+$("#app").addEventListener("click", (e) => {
+  const f = e.target.closest("[data-f]"); if (f) { state[f.dataset.f] = state[f.dataset.f] === f.dataset.v ? "" : f.dataset.v; if (f.dataset.v === "") state[f.dataset.f] = ""; render(); return; }
+  const g = e.target.closest("[data-go]"); if (g) location.hash = g.dataset.go;
+});
+
+// ---------------- Combatentes ----------------
+function pgPlan() {
+  const q = norm(state.q);
+  const list = D.planned.filter((p) => !q || norm([p.nome, p.serie, p.aff, p.obt].join(" ")).includes(q));
+  const grupos = [...new Set(list.map((p) => p.serie))];
+  $("#app").innerHTML = chips([["", "No jogo (" + D.species.length + ")"], ["plan", "Em breve (" + D.planned.length + ")"]], state.view, "view") +
+    `<p class="mut sm" style="margin:0 2px 10px">Personagens previstos até o fim de Gaea (documento <b>PERSONAGENS_E_NPCS_DO_JOGO_GAEA</b>) que ainda <b>não são Combatentes do jogo</b>. Só entram quando a arte ficar pronta.</p><div class="count">${list.length} personagens</div>` +
+    grupos.map((g) => `<div class="sec" style="font-size:15px">${esc(g)}</div><div class="list">${list.filter((p) => p.serie === g).map((p) => `<div class="card" style="margin:0"><div class="row"><div class="av" style="display:grid;place-items:center;font-size:22px;color:var(--mut)">?</div><div style="flex:1;min-width:0"><span class="tag ${p.spr ? "g" : "k"}">${p.spr ? "SPRITE PRONTO" : "FALTA ARTE"}</span><div style="font-weight:700">${esc(p.nome)}</div><div class="sm mut">${esc(p.aff)} · ${esc(p.rar.replace(/[^\p{L} ]/gu, "").trim())}</div><div class="sm mut">${esc(p.obt)}</div></div><b class="sm mut">#${p.ordem}</b></div></div>`).join("")}</div>`).join("") + `<div class="foot">Número = ordem de criação de sprites do documento.</div>`;
+}
+function pgMon() {
+  if (state.view === "plan") return pgPlan();
+  const q = norm(state.q);
+  const list = D.species.filter((s) => {
+    if (state.aff && !s.aff.includes(state.aff)) return false;
+    if (state.fr && fr(s) !== state.fr) return false;
+    if (state.obtain && s.obtain !== state.obtain) return false;
+    if (q && !norm([s.name, s.cat, s.franchiseName, s.aff.map((a) => AFF[a]).join(" "), "#" + pad(s.n), s.id].join(" ")).includes(q)) return false;
+    return true;
+  });
+  $("#app").innerHTML =
+    chips([["", "No jogo (" + D.species.length + ")"], ["plan", "Em breve (" + D.planned.length + ")"]], state.view, "view") +
+    chips([["", "Todas as séries"], ...Object.entries(FR)], state.fr, "fr") +
+    chips([["", "Todas as afinidades"], ...D.aff.map((a) => [a.id, a.name])], state.aff, "aff") +
+    chips([["", "Qualquer origem"], ["starter", "Iniciais"], ["wild", "Selvagens"], ["evolution", "Evoluções"], ["gift", "Presentes/Missões"], ["event", "Eventos"], ["legendary", "Lendários"]], state.obtain, "obtain") +
+    `<div class="count">${list.length} de ${D.species.length} Combatentes</div>` +
+    (list.length ? grouped(list) : `<div class="empty">Nenhum Combatente encontrado.</div>`) +
+    `<div class="foot">Projeto de fã, gratuito e não oficial. Dados gerados do jogo em ${esc(D.gerado)}.</div>`;
+}
+function grouped(list) {
+  if (state.fr || q0()) return `<div class="grid">${list.map(monCard).join("")}</div>`;
+  return D.series.map((se) => { const l = list.filter((s) => fr(s) === se.id); return l.length ? `<div class="sec">${esc(se.name)} <span class="mut sm">· #${pad(l[0].n)} a #${pad(l[l.length - 1].n)}</span></div><div class="grid">${l.map(monCard).join("")}</div>` : ""; }).join("");
+}
+const q0 = () => norm(state.q).length > 0;
+const monCard = (s) => `<button class="mon" style="background:${gradient(s)}" data-go="#/mon/${s.id}">
+  <span class="num">#${pad(s.n)}</span><div class="nm">${esc(s.name)}</div>
+  <div class="badges">${s.aff.map((a) => `<span class="b">${esc(AFF[a])}</span>`).join("")}</div>${sprite(s)}</button>`;
+
+// ---------------- ficha do Combatente ----------------
+let tabNow = "sobre";
+function openSheet(kind, id, tab) {
+  const root = $("#sheet-root");
+  if (kind === "mon") { const s = SP[id]; if (!s) return; tabNow = tab || tabNow; root.innerHTML = monSheet(s); }
+  else if (kind === "ag") { const t = TR[id]; if (!t) return; root.innerHTML = agSheet(t); }
+  else if (kind === "it") { const i = IT[id]; if (!i) return; root.innerHTML = itSheet(i); }
+  else return;
+  document.body.style.overflow = "hidden";
+}
+function closeSheet(silent) { $("#sheet-root").innerHTML = ""; document.body.style.overflow = ""; }
+$("#sheet-root").addEventListener("click", (e) => {
+  if (e.target.closest("[data-back]")) { history.length > 1 && document.referrer !== undefined ? location.hash = "#/" + page() : 0; location.hash = "#/" + page(); return; }
+  const g = e.target.closest("[data-go]"); if (g) { location.hash = g.dataset.go; return; }
+  const t = e.target.closest("[data-tab]"); if (t) { tabNow = t.dataset.tab; const s = SP[location.hash.split("/")[2]]; $("#sheet-root").innerHTML = monSheet(s); }
+});
+
+function monSheet(s) {
+  const tabs = [["sobre", "Sobre"], ["status", "Status"], ["evo", "Evolução"], ["golpes", "Golpes"], ["onde", "Onde achar"]];
+  const body = { sobre: tabSobre, status: tabStatus, evo: tabEvo, golpes: tabGolpes, onde: tabOnde }[tabNow](s);
+  return `<div class="sheet"><div class="hero" style="background:${gradient(s)}">
+    <div class="bar"><button data-back aria-label="Voltar">‹</button><b>#${pad(s.n)}</b></div>
+    <h2>${esc(s.name)}</h2><div class="cat">${esc(s.cat)}</div>
+    <div class="badges">${s.aff.map((a) => `<span class="b">${esc(AFF[a])}</span>`).join("")}<span class="b">${esc(s.franchiseName)}</span><span class="b">Era ${ERA[s.era]}</span></div>
+    ${s.sprite ? `<img class="big" src="${s.sprite}" ${auraCss(s)} alt="">` : ""}</div>
+    <div class="panel"><div class="tabs">${tabs.map(([k, n]) => `<button data-tab="${k}" class="${tabNow === k ? "on" : ""}">${n}</button>`).join("")}</div>${body}</div></div>`;
+}
+function tabSobre(s) {
+  return `<div class="card"><p style="margin:0">${esc(s.desc)}</p></div>
+  <div class="card"><h3>Informações</h3><div class="kv">
+    <div><small>Série</small>${esc(s.franchiseName)}</div><div><small>Era</small>${ERA[s.era]}</div>
+    <div><small>Estágio</small>${s.stage}º</div><div><small>Raridade</small>${RARE[s.rarity]}</div>
+    <div><small>Origem</small>${esc(s.obtainName)}</div><div><small>Taxa de captura</small>${s.catchRate} / 255</div>
+    <div><small>Itens que segura</small>${s.heldSlots}</div><div><small>XP base</small>${s.baseXp}</div></div></div>
+  <div class="card"><h3>Habilidade${s.abilities.length > 1 ? "s" : ""}</h3>${s.abilities.map((a) => `<div style="margin-bottom:8px"><b>${esc(a.name)}</b><div class="mut sm">${esc(a.desc)}</div></div>`).join("")}</div>
+  ${s.signature.length ? `<div class="card"><h3>Golpes-estrela</h3><div class="wk">${s.learnset.filter((m) => m.star).map((m) => `<span class="b" style="--c:${col(m.affinity)}"><span class="star">★</span> ${esc(m.name)}<em>Nv ${m.level}</em></span>`).join("")}</div></div>` : ""}
+  <div class="card"><h3>Fraquezas e resistências</h3>${weak(s)}</div>
+  ${s.forms.length ? s.forms.map(formCard).join("") : ""}`;
+}
+function weak(s) {
+  const e = Object.entries(s.weak);
+  const g = (f) => e.filter(([, m]) => f(m)).sort((a, b) => b[1] - a[1]);
+  const row = (title, arr) => arr.length ? `<div class="sm mut" style="margin:8px 0 4px">${title}</div><div class="wk">${arr.map(([a, m]) => `<span class="b" style="--c:${col(a)}">${esc(AFF[a])}<em>×${m}</em></span>`).join("")}</div>` : "";
+  return row("Toma mais dano de", g((m) => m > 1)) + row("Toma menos dano de", g((m) => m < 1 && m > 0)) + row("Imune a", g((m) => m === 0)) || `<span class="mut">Nenhuma fraqueza especial.</span>`;
+}
+function formCard(f) {
+  const b = Object.entries(f.bonus).filter(([, v]) => v !== 0);
+  return `<div class="card" style="border:2px solid ${col(f.aff[0])}"><h3>Henshin em Batalha (Mega) · ${esc(f.short || "")}</h3>
+    <div style="font-size:18px;font-weight:800;margin-bottom:4px">${esc(f.name)}</div>
+    <div style="margin:4px 0 8px">${f.aff.map(aff).join(" ")}</div>
+    <div class="sm">Precisa segurar: <a href="#/it/${f.item}"><b>${esc(f.itemName)}</b></a></div>
+    ${f.fusion ? `<div class="sm" style="margin-top:6px"><b>Fusão:</b> precisa dos ${f.fusion.length} na equipe, vivos. Os outros ficam fundidos até o fim da batalha e o líder se recupera por inteiro.<div class="wk" style="margin-top:6px">${f.fusion.map((id) => mini(id, false)).join("")}</div></div>` : ""}
+    <div class="wk" style="margin:8px 0">${b.map(([k, v]) => `<span class="b" style="--c:${v > 0 ? "#2f9e5b" : "#d4503f"}">${esc(D.stats[k])} ${v > 0 ? "+" : ""}${v}</span>`).join("")}<span class="b" style="--c:#555">Golpes ×${f.boost}</span></div>
+    <div class="sm"><b>Golpe especial:</b> ${esc(f.special.name)} <span class="mut">(${f.special.power} de poder · recarga ${f.cooldown} turnos)</span></div>
+    ${f.ability ? `<div class="sm"><b>Habilidade:</b> ${esc(f.ability.name)} — ${esc(f.ability.desc)}</div>` : ""}
+    ${f.rule ? `<div class="sm mut" style="margin-top:6px">${esc(RULE[f.rule] || f.rule)}</div>` : ""}
+    <div class="sm mut" style="margin-top:4px">Animação: ${esc(ANIM[f.anim] || f.anim)}</div></div>`;
+}
+function tabStatus(s) {
+  const max = 140;
+  const bars = Object.entries(s.stats).map(([k, v]) => `<div class="stat"><span class="mut">${esc(D.stats[k])}</span><b>${v}</b><div class="bar0"><i style="width:${Math.min(100, (v / max) * 100)}%;background:${v >= 100 ? "#2f9e5b" : v >= 70 ? "#e0b81c" : "#d4503f"}"></i></div></div>`).join("");
+  const f = s.forms[0];
+  const fb = f ? `<div class="card"><h3>Com ${esc(f.name)}</h3>${Object.entries(s.stats).map(([k, v]) => { const n = v + f.bonus[k]; return `<div class="stat"><span class="mut">${esc(D.stats[k])}</span><b>${n}</b><div class="bar0"><i style="width:${Math.min(100, (n / max) * 100)}%;background:${col(f.aff[0])}"></i></div></div>`; }).join("")}<div class="stat"><span class="mut"><b>Total</b></span><b>${s.total + Object.values(f.bonus).reduce((a, b) => a + b, 0)}</b><span></span></div></div>` : "";
+  return `<div class="card"><h3>Atributos base</h3>${bars}<div class="stat"><span class="mut"><b>Total</b></span><b>${s.total}</b><span></span></div></div>${fb}
+  <div class="card"><h3>Crescimento</h3><div class="kv"><div><small>Curva de XP</small>${{ fast: "Rápida", medium_fast: "Média-rápida", medium_slow: "Média-lenta", slow: "Lenta" }[s.curve]}</div><div><small>XP base</small>${s.baseXp}</div></div></div>`;
+}
+const mini = (id, cur) => { const s = SP[id]; return `<button class="mini ${cur ? "cur" : ""}" data-go="#/mon/${id}">${s.sprite ? `<img src="${s.sprite}" ${auraCss(s)} alt="">` : `<div style="height:64px"></div>`}${esc(s.name)}</button>`; };
+function chainRoot(s) { let c = s; const seen = new Set(); while (c.evolvesFrom.length && !seen.has(c.id)) { seen.add(c.id); c = SP[c.evolvesFrom[0].from]; } return c; }
+function chainHtml(r, cur) {
+  const nx = r.evolvesTo;
+  if (!nx.length) return mini(r.id, r.id === cur);
+  return `<div class="evo">${mini(r.id, r.id === cur)}<div style="display:flex;flex-direction:column;gap:10px">${nx.map((e) => `<div class="evo"><div class="arrow"><span>→</span>${esc(e.text)}</div>${chainHtml(SP[e.to], cur)}</div>`).join("")}</div></div>`;
+}
+function tabEvo(s) {
+  const root = chainRoot(s);
+  const has = root.evolvesTo.length > 0;
+  const f = s.forms.map((x) => `<div class="card"><h3>${x.fusion ? "Fusão em Batalha" : "Henshin em Batalha (Mega)"}</h3>${x.fusion ? `<div class="evo">${x.fusion.map((id) => mini(id, id === s.id)).join('<span class="arrow"><span>+</span></span>')}</div><div class="evo" style="margin-top:8px"><div class="arrow"><span>↓</span>Segura<br><b>${esc(x.itemName)}</b></div></div>` : ""}<div class="evo">${x.fusion ? "" : mini(s.id, true)}${x.fusion ? "" : `<div class="arrow"><span>⚡</span>Segura<br><b>${esc(x.itemName)}</b></div>`}<div class="mini" style="background:${col(x.aff[0])};color:#fff;width:120px">${s.sprite ? `<img src="${s.sprite}" style="filter:drop-shadow(0 0 8px #fff)" alt="">` : ""}${esc(x.name)}</div></div><p class="sm mut">Dura só a batalha. Dá bônus de atributos e um golpe especial.</p></div>`).join("");
+  return (has ? `<div class="card"><h3>Linha de evolução</h3><div style="overflow-x:auto;padding-bottom:4px">${chainHtml(root, s.id)}</div></div>` : `<div class="card"><h3>Evolução</h3><span class="mut">${esc(s.name)} não evolui.</span></div>`) + f;
+}
+function tabGolpes(s) {
+  const n = s.learnset.length;
+  return `<p class="mut sm" style="margin:0 2px 10px">Aprende um golpe novo a cada 3 a 7 níveis (${n} no total). Só 4 ficam ativos por vez. <span class="star">★</span> = golpe-estrela, o que ele usa na série original.</p>
+  <div class="card" style="padding:6px 10px"><table><tr><th>Nv</th><th>Golpe</th><th>Afin.</th><th>Cat.</th><th>Poder</th><th>Prec.</th></tr>${s.learnset.map((m) => `<tr class="${m.star ? "starrow" : ""}"><td>${m.level}</td><td>${m.star ? `<span class="star">★</span> ` : ""}<b>${esc(m.name)}</b><div class="mut" style="font-size:11px">${esc(m.desc)}</div></td><td>${aff(m.affinity)}</td><td>${CAT[m.category]}</td><td>${m.power || "—"}</td><td>${m.accuracy}</td></tr>`).join("")}</table></div>`;
+}
+function tabOnde(s) {
+  const w = s.where;
+  const wild = w.filter((x) => x.kind === "selvagem");
+  const others = w.filter((x) => x.kind !== "selvagem" && x.kind !== "agente");
+  const ag = w.filter((x) => x.kind === "agente");
+  let h = "";
+  if (s.evolvesFrom.length) {
+    const base = chainRoot(s), spots = [...new Set(base.where.filter((x) => x.kind === "selvagem").map((x) => x.mapName))];
+    h += `<div class="card"><h3>Evolução</h3>Evolui de ${s.evolvesFrom.map((e) => `<a href="#/mon/${e.from}"><b>${esc(SP[e.from].name)}</b></a> (${esc(e.text)})`).join(", ")}.${spots.length ? `<div class="sm mut" style="margin-top:6px">Forma inicial da linha (<a href="#/mon/${base.id}">${esc(base.name)}</a>) aparece em: ${spots.map(esc).join(", ")}.</div>` : ""}</div>`;
+  }
+  if (wild.length) {
+    const by = {};
+    wild.forEach((x) => (by[x.map] ??= []).push(x));
+    h += `<div class="card"><h3>Selvagem</h3><table><tr><th>Local</th><th>Terreno</th><th>Nível</th><th>Chance</th><th>Horário</th></tr>${wild.map((x) => `<tr><td><b>${esc(x.mapName)}</b></td><td>${TERR[x.terrain] || x.terrain}</td><td>${x.level[0] === x.level[1] ? x.level[0] : x.level.join("–")}</td><td>${x.rate}%</td><td>${x.times.length === 3 ? "Sempre" : x.times.map((t) => PER[t]).join(", ")}</td></tr>`).join("")}</table></div>`;
+  }
+  if (others.length) h += `<div class="card"><h3>Eventos e recompensas</h3>${others.map((x) => `<div style="margin-bottom:10px"><span class="tag ${x.kind === "lendario" || x.kind === "fusao" ? "p" : x.kind === "inicial" ? "y" : "g"}">${PLACE[x.kind]}</span> <b>${esc(x.mapName)}</b>${x.level[0] ? ` · Nv ${x.level[0]}` : ""}<div class="sm mut">${esc(x.text)}</div></div>`).join("")}</div>`;
+  if (ag.length) h += `<div class="card"><h3>Treinadores que usam ${esc(s.name)}</h3>${ag.map((x) => { const t = TR[x.trainer]; return `<button class="item-btn" style="box-shadow:none;background:var(--bg);margin-bottom:6px" data-go="#/ag/${x.trainer}">${t.portrait ? `<img class="av" style="width:42px;height:42px" src="${t.portrait}" alt="">` : ""}<div><b>${esc(t.name)}</b> <span class="mut sm">Nv ${x.level[0]}</span><div class="sm mut">${esc(x.mapName)}</div></div></button>`; }).join("")}</div>`;
+  if (!wild.length && !others.length && !s.evolvesFrom.length) h += `<div class="card"><h3>Onde encontrar</h3><span class="mut">${{ gift: "Presente ou missão paralela — o local ainda não foi definido no jogo atual.", event: "Evento especial — o local ainda não foi definido no jogo atual.", legendary: "Lendário — ainda não tem local definido no jogo atual.", wild: "Ainda não aparece no mato do jogo atual.", starter: "Inicial.", evolution: "Só por evolução." }[s.obtain]}</span></div>`;
+  return h;
+}
+
+// ---------------- Quartéis ----------------
+function medalSvg(m) {
+  const [c1, c2, c3] = m.colors;
+  const shapes = {
+    sun: `<circle cx="32" cy="32" r="11" fill="${c2}"/>${[...Array(8)].map((_, i) => `<rect x="30" y="6" width="4" height="10" rx="2" fill="${c2}" transform="rotate(${i * 45} 32 32)"/>`).join("")}`,
+    eye: `<path d="M8 32q24-24 48 0q-24 24-48 0z" fill="${c3}"/><circle cx="32" cy="32" r="9" fill="${c2}"/><circle cx="32" cy="32" r="4" fill="#111"/>`,
+    wind: `<path d="M12 24h28a6 6 0 1 0-6-6M8 34h40a6 6 0 1 1-6 6M14 44h22" stroke="${c3}" stroke-width="4" fill="none" stroke-linecap="round"/>`,
+    gear: `<circle cx="32" cy="32" r="14" fill="${c2}"/>${[...Array(8)].map((_, i) => `<rect x="28" y="8" width="8" height="10" fill="${c2}" transform="rotate(${i * 45} 32 32)"/>`).join("")}<circle cx="32" cy="32" r="6" fill="${c3}"/>`,
+    double: `<circle cx="24" cy="32" r="13" fill="${c2}"/><circle cx="40" cy="32" r="13" fill="${c3}" opacity=".9"/>`,
+    five: [...Array(5)].map((_, i) => `<circle cx="32" cy="14" r="7" fill="${["#e04a3a", "#3a6ae0", "#f0c030", "#3ab060", "#e87aa8"][i]}" transform="rotate(${i * 72} 32 32)"/>`).join(""),
+    note: `<path d="M26 14v28a7 6 0 1 1-4-5.4V18l22-4v24a7 6 0 1 1-4-5.4V20z" fill="${c2}"/>`,
+    badge: `<path d="M32 8l20 8v14c0 12-8 20-20 26C20 50 12 42 12 30V16z" fill="${c2}"/><path d="M32 20l4 8 9 1-6.5 6 2 9-8.5-4.5L23.500 44l2-9L19 29l9-1z" fill="${c3}"/>`,
+    globe: `<circle cx="32" cy="32" r="17" fill="${c2}"/><path d="M15 32h34M32 15c-9 10-9 24 0 34M32 15c9 10 9 24 0 34" stroke="${c3}" stroke-width="2.500" fill="none"/>`,
+    moon: `<path d="M42 12a20 20 0 1 0 0 40a16 16 0 1 1 0-40z" fill="${c2}"/>`,
+  };
+  return `<svg class="medal" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="${c1}" stroke="rgba(0,0,0,.35)" stroke-width="2"/>${shapes[m.shape] || ""}</svg>`;
+}
+function pgHq() {
+  const cap = D.trainers.filter((t) => ["conselho", "campeao"].includes(t.role));
+  $("#app").innerHTML = `<div class="sec">10 Quartéis (ginásios) · Medalhas Henshin</div><div class="list">${D.quarteis.map((q) => {
+    const t = TR[q.trainer];
+    return `<div class="card" style="margin:0"><div class="row">${medalSvg(q.medal)}<div style="flex:1"><div class="mut sm">Quartel ${q.n} · ${esc(q.city)}</div><div style="font-weight:800;font-size:16px">${esc(q.medal.name)}</div><div class="sm">Técnica de campo: <b>${esc(q.medal.tech)}</b></div></div></div>
+    <div class="row" style="margin-top:10px;cursor:pointer" data-go="#/ag/${t.id}">${t.portrait ? `<img class="av" src="${t.portrait}" alt="">` : ""}<div><span class="tag y">COMANDANTE</span><div><b>${esc(t.name)}</b></div><div class="sm mut">Puzzle: ${esc(q.puzzle)}</div></div></div>
+    <div class="wk" style="margin-top:10px">${t.party.map((p) => p.species ? `<button class="mini" style="width:78px;padding:5px" data-go="#/mon/${p.species}">${SP[p.species].sprite ? `<img style="width:50px;height:50px" src="${SP[p.species].sprite}" alt="">` : ""}<span style="font-size:10px">${esc(SP[p.species].name)}<br>Nv ${p.level}</span></button>` : "").join("")}</div>
+    ${q.hero ? `<div class="sm" style="margin-top:8px"><span class="tag g">DESAFIO</span> Depois da medalha: <a href="#/mon/${q.hero.species}"><b>${esc(SP[q.hero.species].name)}</b></a> Nv ${q.hero.level} desafia você (pode ser capturado)</div>` : ""}
+    ${q.items.length ? `<div class="sm" style="margin-top:6px"><span class="tag b">PRESENTE</span> ${q.items.map(([i, n]) => `${n}× <a href="#/it/${i}">${esc(IT[i].name)}</a>`).join(", ")}</div>` : ""}</div>`;
+  }).join("")}</div>
+  <div class="sec">Conselho dos Cinco e Campeão · Planalto Vitória</div><p class="mut sm" style="margin:0 2px 8px">Precisa das 10 medalhas. Os desafios acontecem em sequência no Salão da Vitória.</p>
+  <div class="list">${cap.map(agRow).join("")}</div>`;
+}
+
+// ---------------- Agentes ----------------
+const agRow = (t) => `<button class="item-btn" data-go="#/ag/${t.id}">${t.portrait ? `<img class="av" src="${t.portrait}" alt="">` : `<div class="av"></div>`}<div style="flex:1;min-width:0"><span class="tag ${ROLE[t.role][1]}">${esc(t.class)}</span><div style="font-weight:700">${esc(t.name)}</div><div class="sm mut">${esc(t.maps[0] || "—")} · ${t.party.length} Combatente${t.party.length > 1 ? "s" : ""}</div></div></button>`;
+function pgAg() {
+  const q = norm(state.q);
+  const list = D.trainers.filter((t) => (!state.agRole || t.role === state.agRole) && (!q || norm([t.name, t.class, t.maps.join(" ")].join(" ")).includes(q)));
+  $("#app").innerHTML = chips([["", "Todos"], ...Object.entries(ROLE).map(([k, v]) => [k, v[0]])], state.agRole, "agRole") + `<div class="count">${list.length} de ${D.trainers.length} Agentes</div><div class="list">${list.map(agRow).join("")}</div>` + (state.agRole || q ? "" : agPlan());
+}
+function agPlan() {
+  const N = D.npcsPlan, det = (t, inner) => `<details class="card" style="margin-top:10px"><summary><b>${t}</b></summary><div style="margin-top:8px">${inner}</div></details>`;
+  return `<div class="sec">Em breve (previsto no documento)</div>` +
+    det(`Rivais (${N.rivais.length})`, N.rivais.map((r) => `<div class="row" style="margin-bottom:8px">${r.portrait ? `<img class="av" src="${r.portrait}" alt="">` : ""}<div><b>${esc(r.nome)}</b> <span class="tag ${r.jogo.startsWith("No jogo") ? "g" : "k"}">${esc(r.jogo)}</span><div class="sm mut">${esc(r.texto)}</div></div></div>`).join("")) +
+    det(`Guardiões (${N.guardioes.length})`, N.guardioes.map((g) => `<div style="margin-bottom:10px"><span class="tag p">${esc(g.id)}</span> <b>${esc(g.nome)}</b><div class="sm mut">${esc(g.local)} · abre após ${esc(g.abre)} · Totem: ${esc(g.totem)}<br>Batalha: ${esc(g.batalha)} · Provação contra ${esc(g.rival)}</div></div>`).join("")) +
+    det(`Vilões humanos (${N.viloes.length})`, N.viloes.map((v) => `<div style="margin-bottom:10px"><b>${esc(v.nome)}</b><div class="sm mut">${esc(v.papel)}<br>Frentes: ${esc(v.frentes)} · Usa: ${esc(v.combatentes)}</div></div>`).join("")) +
+    det(`Quests secundárias (${N.quests.length})`, `<table>${N.quests.map((q) => `<tr><td><b>${esc(q.id)}</b></td><td>${esc(q.nome)}<div class="mut" style="font-size:11px">${esc(q.local)} · ${esc(q.quem)}</div></td><td>${esc(q.recompensa)}</td><td>${esc(q.status)}</td></tr>`).join("")}</table>`);
+}
+function agSheet(t) {
+  const [rn, rc] = ROLE[t.role];
+  const q = t.gym ? D.quarteis.find((x) => x.n === t.gym) : null;
+  return `<div class="sheet"><div class="hero" style="background:linear-gradient(135deg,#2c3040,#444b63)"><div class="bar"><button data-back aria-label="Voltar">‹</button><b>${esc(rn)}</b></div>
+    <h2>${esc(t.name)}</h2><div class="cat">${esc(t.class)}</div><div class="badges">${t.maps.map((m) => `<span class="b">${esc(m)}</span>`).join("")}</div>
+    ${t.portrait ? `<img class="big" style="image-rendering:pixelated" src="${t.portrait}" alt="">` : ""}</div>
+    <div class="panel">
+    ${t.quote ? `<div class="card"><h3>Fala de desafio</h3><p style="margin:0;font-style:italic">“${esc(t.quote.replace(/^[^:]+: /, ""))}”</p></div>` : ""}
+    <div class="card"><h3>Time</h3><div class="wk">${t.party.map((p) => p.species ? `<button class="mini" data-go="#/mon/${p.species}">${SP[p.species].sprite ? `<img src="${SP[p.species].sprite}" alt="">` : `<div style="height:64px"></div>`}${esc(SP[p.species].name)}<span class="mut">Nv ${p.level}</span>${p.held.length ? `<span class="tag b" style="margin-top:3px">${esc(IT[p.held[0]]?.name || "")}</span>` : ""}</button>` : `<div class="mini"><div style="height:64px;font-size:34px;line-height:64px">?</div>Inicial do rival<span class="mut">Nv ${p.level}</span></div>`).join("")}</div></div>
+    <div class="card"><h3>Detalhes</h3><div class="kv"><div><small>Recompensa</small>${t.reward} moedas</div><div><small>Inteligência</small>${t.ai === "smart" ? "Esperta" : "Básica"}</div></div>
+    ${q ? `<div style="margin-top:10px">${medalSvg(q.medal).replace('class="medal"', 'class="medal" style="float:left;margin-right:10px"')}<b>${esc(q.medal.name)}</b><div class="sm mut">Técnica: ${esc(q.medal.tech)} · Puzzle: ${esc(q.puzzle)}</div><div style="clear:both"></div></div>` : ""}</div>
+    </div></div>`;
+}
+
+// ---------------- Itens ----------------
+function pgIt() {
+  const q = norm(state.q);
+  const cats = [...new Map(D.items.map((i) => [i.catId, i.cat]))];
+  const list = D.items.filter((i) => (!state.itCat || i.catId === state.itCat) && (!q || norm(i.name + i.desc).includes(q)));
+  $("#app").innerHTML = chips([["", "Todos"], ...cats], state.itCat, "itCat") + `<div class="list">${list.map((i) => `<button class="item-btn" data-go="#/it/${i.id}">${i.img ? `<img class="av" style="image-rendering:auto" src="${i.img}" alt="">` : `<div class="av" style="display:grid;place-items:center;font-size:24px">◆</div>`}<div style="flex:1"><span class="tag k">${esc(i.cat)}</span><div style="font-weight:700">${esc(i.name)}</div><div class="sm mut">${esc(i.desc)}</div></div><b class="sm">${i.price ? i.price + "₮" : ""}</b></button>`).join("")}</div>`;
+}
+function itSheet(i) {
+  const bits = [];
+  if (i.shops.length) bits.push(`<div class="card"><h3>À venda</h3>${i.shops[0] === "Todas as lojas" ? "Em todas as Lojas de Suprimentos." : `<details open><summary>${i.shops.length} lojas</summary><div class="sm" style="margin-top:6px">${i.shops.map(esc).join("<br>")}</div></details>`}</div>`);
+  if (i.missions.length) bits.push(`<div class="card"><h3>Recompensa de missões</h3><div class="sm">${i.missions.map(esc).join(", ")}</div></div>`);
+  if (i.gyms.length) bits.push(`<div class="card"><h3>Presente de Quartel</h3><div class="sm">${i.gyms.map(esc).join(", ")}</div></div>`);
+  if (i.text) bits.push(`<div class="card"><h3>Onde conseguir</h3><div class="sm">${esc(i.text)}</div></div>`);
+  if (!bits.length) bits.push(`<div class="card"><h3>Onde conseguir</h3><span class="mut sm">Item de história ou ainda sem local definido no jogo.</span></div>`);
+  const users = [...i.usedBy.map((id) => [id, "Henshin em Batalha"]), ...i.evolves.map((id) => [id, "Evolução"])];
+  return `<div class="sheet"><div class="hero" style="background:linear-gradient(135deg,#2f7d6f,#1f5e86)"><div class="bar"><button data-back aria-label="Voltar">‹</button><b>${esc(i.cat)}</b></div><h2>${esc(i.name)}</h2><div class="cat">${esc(i.desc)}</div>${i.img ? `<img class="big" src="${i.img}" alt="">` : ""}</div>
+  <div class="panel"><div class="card"><div class="kv"><div><small>Preço</small>${i.price ? i.price + " moedas" : "Não vende"}</div>${i.capture ? `<div><small>Força de captura</small>×${i.capture}</div>` : ""}${i.heal ? `<div><small>Cura</small>${i.heal} HP</div>` : ""}</div></div>${bits.join("")}
+  ${users.length ? `<div class="card"><h3>Usado por</h3><div class="wk">${users.map(([id, why]) => `<button class="mini" data-go="#/mon/${id}">${SP[id].sprite ? `<img src="${SP[id].sprite}" alt="">` : ""}${esc(SP[id].name)}<span class="mut">${why}</span></button>`).join("")}</div></div>` : ""}</div></div>`;
+}
+
+// ---------------- Afinidades ----------------
+function pgAf() {
+  const A = D.aff.map((a) => a.id);
+  const cell = (a, d) => { const m = D.chart[a]?.[d] ?? 1; return m === 2 ? `<td class="x2">2×</td>` : m === 0.5 ? `<td class="x5">½</td>` : m === 0 ? `<td class="x0">0</td>` : `<td></td>`; };
+  $("#app").innerHTML = `<div class="sec">Tabela de afinidades</div><p class="mut sm" style="margin:0 2px 8px">Linhas = quem ataca · colunas = quem defende. Verde = muito eficaz (2×), vermelho = pouco eficaz (½), preto = não afeta.</p>
+  <div class="matrix"><table><tr><th class="h" style="left:0;z-index:3"></th>${A.map((a) => `<th class="h" style="color:${col(a)}">${esc(AFF[a].slice(0, 4))}</th>`).join("")}</tr>
+  ${A.map((a) => `<tr><td class="l" style="color:${col(a)}">${esc(AFF[a])}</td>${A.map((d) => cell(a, d)).join("")}</tr>`).join("")}</table></div>
+  <div class="sec">Combatentes por afinidade</div>${A.map((a) => { const n = D.species.filter((s) => s.aff.includes(a)).length; return `<div class="item-btn" style="margin-bottom:8px" data-go="#/mon" onclick="state.aff='${a}'"><span class="b" style="background:${col(a)};width:96px;text-align:center">${esc(AFF[a])}</span><b>${n}</b> Combatentes</div>`; }).join("")}`;
+}
+
+// ---------------- Locais ----------------
+function pgMap() {
+  const q = norm(state.q);
+  $("#app").innerHTML = `<div class="sec">Cidades, rotas e locais</div><p class="mut sm" style="margin:0 2px 8px">Região de Gaea (Era Showa). Toque num Combatente ou Agente para abrir.</p><div class="list">${D.cities.map((c) => `<div class="card" style="margin:0"><div style="font-weight:800;font-size:16px;margin-bottom:6px">${esc(c.name)}</div>
+  ${c.wild.length ? `<div class="mut sm">Combatentes selvagens</div><div class="wk" style="margin:4px 0 8px">${c.wild.map((id) => `<button class="mini" style="width:70px;padding:4px" data-go="#/mon/${id}">${SP[id].sprite ? `<img style="width:46px;height:46px" src="${SP[id].sprite}" alt="">` : ""}<span style="font-size:10px">${esc(SP[id].name)}</span></button>`).join("")}</div>` : ""}
+  ${c.trainers.length ? `<div class="mut sm">Agentes (${c.trainers.length})</div><div class="wk" style="margin-top:4px">${c.trainers.map((id) => `<button class="chip" data-go="#/ag/${id}">${esc(TR[id].name)}</button>`).join("")}</div>` : ""}
+  ${!c.wild.length && !c.trainers.length ? `<span class="mut sm">Sem encontros nem Agentes.</span>` : ""}</div>`).join("")}</div>`;
+}
+
+render();
+</script>
+</body>
+</html>
