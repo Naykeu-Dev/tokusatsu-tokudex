@@ -125,7 +125,7 @@ const SP = Object.fromEntries(D.species.map((s) => [s.id, s]));
 const TR = Object.fromEntries(D.trainers.map((t) => [t.id, t]));
 const IT = Object.fromEntries(D.items.map((i) => [i.id, i]));
 const AFF = Object.fromEntries(D.aff.map((a) => [a.id, a.name]));
-const COL = { marcial:"#d2562d", inseto:"#7aa32a", cosmico:"#3d7be0", sombrio:"#5a4a78", kaiju:"#8a6a3a", cibernetico:"#4aa3c4", fogo:"#ee6a2a", agua:"#3a8ee6", planta:"#3ea853", eletrico:"#e0b81c", elemental:"#9a6ad6", mistico:"#c25fc0", ninja:"#3b4658", mecha:"#7f8a99", espectral:"#6f58b8", temporal:"#d98a1f", digital:"#18a99a" };
+const COL = { marcial:"#d2562d", inseto:"#7aa32a", cosmico:"#3d7be0", sombrio:"#5a4a78", kaiju:"#8a6a3a", cibernetico:"#4aa3c4", fogo:"#ee6a2a", agua:"#3a8ee6", planta:"#3ea853", eletrico:"#e0b81c", elemental:"#9a6ad6", mistico:"#c25fc0", ninja:"#3b4658", mecha:"#7f8a99", espectral:"#6f58b8", temporal:"#d98a1f", digital:"#18a99a", metal:"#8e9aa8", papel:"#c9a96a", pedra:"#8d7f6e", gelo:"#52c4de", vento:"#5fbf9a", veneno:"#8a2fb0", som:"#ee6f8c", psiquico:"#c0409a", luz:"#e0b92e" };
 const col = (a) => COL[a] || "#777";
 const fr = (s) => (s.franchise === "outros" ? "outras" : s.franchise);
 const FR = {}; D.species.forEach((s) => (FR[fr(s)] = s.franchiseName));
@@ -229,7 +229,7 @@ function pgMon() {
     if (state.aff && !s.aff.includes(state.aff)) return false;
     if (state.fr && fr(s) !== state.fr) return false;
     if (state.obtain && s.obtain !== state.obtain) return false;
-    if (q && !norm([s.name, s.cat, s.franchiseName, s.aff.map((a) => AFF[a]).join(" "), "#" + pad(s.n), s.id].join(" ")).includes(q)) return false;
+    if (q && !norm([s.name, s.cat, s.franchiseName, s.series || "", s.aff.map((a) => AFF[a]).join(" "), "#" + pad(s.n), s.id].join(" ")).includes(q)) return false;
     return true;
   });
   $("#app").innerHTML =
@@ -281,7 +281,7 @@ function monSheet(s) {
 function tabSobre(s) {
   return `<div class="card"><p style="margin:0">${esc(s.desc)}</p></div>
   <div class="card"><h3>Informações</h3><div class="kv">
-    <div><small>Série</small>${esc(s.franchiseName)}</div><div><small>Era</small>${ERA[s.era]}</div>
+    <div><small>Franquia</small>${esc(s.franchiseName)}</div>${s.series ? `<div><small>Série</small>${esc(s.series)}</div>` : ""}<div><small>Era</small>${ERA[s.era]}</div>
     <div><small>Estágio</small>${s.stage}º</div><div><small>Raridade</small>${RARE[s.rarity]}</div>
     <div><small>Origem</small>${esc(s.obtainName)}</div><div><small>Taxa de captura</small>${s.catchRate} / 255</div>
     <div><small>Itens que segura</small>${s.heldSlots}</div><div><small>XP base</small>${s.baseXp}</div></div></div>
